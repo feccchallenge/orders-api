@@ -1,0 +1,91 @@
+{
+	"info": {
+		"_postman_id": "6fa34102-fc70-48db-8d92-29f591331fa7",
+		"name": "orders-app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42479309"
+	},
+	"item": [
+		{
+			"name": "Create order",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"1111\",\n    \"products\": [\n        {\n            \"productId\": \"product01\",\n            \"quantity\": 3\n        },\n        {\n            \"productId\": \"product02\",\n            \"quantity\": 5\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/create-order",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"create-order"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order detail",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/orders/:orderId",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"orders",
+						":orderId"
+					],
+					"variable": [
+						{
+							"key": "orderId",
+							"value": "67b6767e15962bd15d7e8053"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/logs/orders/:orderId",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"logs",
+						"orders",
+						":orderId"
+					],
+					"variable": [
+						{
+							"key": "orderId",
+							"value": "67b678aba90629b7c7278259"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

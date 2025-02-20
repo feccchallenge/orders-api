@@ -1,0 +1,120 @@
+version: '3.7'
+
+services:
+  orders-app:
+    build:
+      context: .
+      dockerfile: DockerfileApp
+    container_name: orders-app
+    ports:
+      - "3000:3000"
+    environment:
+      - ORDER_EVENTS_QUEUE=order_processing_event
+      - ES_INDEX=order-processing-events
+      - REDIS_URI=redis://redis:6379
+      - MONGO_URI=mongodb://admin:adminadmin@mongodb:27017
+      - ELASTICSEARCH_URI=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_PASSWORD=adminadmin
+      - RABBITMQ_URI=amqp://admin:adminadmin@rabbitmq      
+    depends_on:
+      - redis
+      - mongodb
+      - elasticsearch
+      - rabbitmq
+    networks:
+      - orders-app-network
+    volumes:
+      - .:/usr/src/app
+    restart: always
+  orders-worker:
+    build:
+      context: .
+      dockerfile: DockerfileWorker
+    container_name: orders-worker-app
+    ports:
+      - "3001:3000"
+    environment:
+      - ORDER_EVENTS_QUEUE=order_processing_event
+      - ES_INDEX=order-processing-events
+      - REDIS_URI=redis://redis:6379
+      - MONGO_URI=mongodb://admin:adminadmin@mongodb:27017
+      - ELASTICSEARCH_URI=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_PASSWORD=adminadmin
+      - RABBITMQ_URI=amqp://admin:adminadmin@rabbitmq          
+    depends_on:
+      - mongodb
+      - redis      
+      - rabbitmq
+      - elasticsearch
+    networks:
+      - orders-app-network
+    volumes:
+      - .:/usr/src/app
+    restart: always
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=adminadmin
+    ports:
+      - "27017:27017"
+    networks:
+      - orders-app-network
+    restart: always
+    volumes:
+      - mongodbData:/data/db
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - orders-app-network
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=adminadmin
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - orders-app-network
+    restart: always
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:15672"]
+        interval: 20s
+        timeout: 20s
+        retries: 8
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_PASSWORD=adminadmin
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - orders-app-network
+    restart: always
+    volumes:
+      - elasticsearchData:/usr/share/elasticsearch/data
+
+volumes:
+  mongodbData:
+  elasticsearchData:
+
+networks:
+  orders-app-network:
+    driver: bridge
